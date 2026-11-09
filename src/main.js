@@ -1,5 +1,6 @@
 import { CONFIG_PADRAO, avaliar, verificarNovoTrade, tradesDoDia, perdasSeguidas, estadoSessao, folgas } from "./core/rules.js";
 import { MODELOS_CONTA, aplicarModelo } from "./core/propfirm.js";
+import { avaliarSinal, placar, falaDoSinal } from "./core/ataque.js";
 import { PLATAFORMAS, dicaPartilha, superficieDe } from "./core/plataformas.js";
 import { TIMEFRAMES, msAteFechoVela, leiturasPorHora, lerTimeframe } from "./core/cadencia.js";
 import { construirSistemaChat, contextoDoMomento, construirMensagensChat, respostaDemo } from "./core/chat.js";
@@ -67,6 +68,8 @@ const estado = {
   emCurso: false,
   abort: null,
   ia: null,
+  modo: ler("modo", "disciplina"), // "ataque" só existe no teste privado
+  sinais: [], // sinais do Modo Ataque nesta sessão, para o placar
   servidor: null, // servidor de teste (npm run teste): a IA já vem ligada, sem licença nem chave
   codigo: ler("codigo", ""),
   proximaEm: 0,
@@ -278,7 +281,8 @@ function renderProgresso() {
 
 // ---------- disciplina ----------
 function atualizarDisciplina() {
-  const { alertas, bloqueio } = avaliar(estado.config, estado.trades);
+  const { alertas, bloqueio: bloqueioReal } = avaliar(estado.config, estado.trades);
+  const bloqueio = modoAtaque() ? null : bloqueioReal; // no Modo Ataque os limites avisam, não travam
   const pilula = $("estado-disciplina");
   const banner = $("banner-bloqueio");
   const texto = pilula.querySelector("span");
@@ -542,10 +546,104 @@ function aplicarAnalise(a) {
   if (!modoReal()) graficoMercado.definirZonas([...a.niveis, ...(a.invalidacao ? [{ tipo: "invalidacao", preco: a.invalidacao.preco }] : [])]);
 
   for (const al of a.alertas) adicionarAlerta(al.gravidade, al.mensagem);
-  const fala = decidirFala(a, $("sel-modo").value, estado.analiseAnterior);
-  if (fala && vozLigada()) falar(fala, { urgente: fala.startsWith("Atenção") });
+  if (modoAtaque() && a.sinal) {
+    tratarSinal(a);
+  } else {
+    const fala = decidirFala(a, $("sel-modo").value, estado.analiseAnterior);
+    if (fala && vozLigada()) falar(fala, { urgente: fala.startsWith("Atenção") });
+  }
   estado.analiseAnterior = a;
 }
+
+// ---------- Modo Ataque (só no teste privado) ----------
+const modoAtaque = () => !!estado.servidor && estado.modo === "ataque";
+const ROTULO_DIRECAO = { compra: "▲ COMPRA", venda: "▼ VENDA", esperar: "⏸ ESPERAR" };
+
+function tratarSinal(a) {
+  const agora = Date.now();
+  // 1) segue os sinais abertos com o preço que a IA leu agora
+  const antes = estado.sinais.map((s) => s.resultado);
+  estado.sinais = estado.sinais.map((s) => avaliarSinal(s, a.preco_atual, agora, estado.config.timeframeMin));
+  estado.sinais.forEach((s, i) => {
+    if (s.resultado && !antes[i]) {
+      const txt = { acerto: "Alvo atingido ✓", erro: "Stop atingido ✕", expirado: "Sinal expirou" }[s.resultado];
+      adicionarAlerta(s.resultado === "acerto" ? "xp" : "aviso", `${txt}: ${s.direcao} a ${s.entrada}.`);
+      if (s.resultado === "acerto") {
+        sons.conquista();
+        confetes();
+      } else sons.alerta();
+      if (vozLigada()) falar(`${txt.replace(/[✓✕]/g, "")}.`, { urgente: true });
+    }
+  });
+  // 2) regista o sinal novo (se for diferente do que já está aberto)
+  const s = a.sinal;
+  const aberto = estado.sinais.find((x) => !x.resultado && x.direcao !== "esperar");
+  const novo = s.direcao !== "esperar" && (!aberto || aberto.direcao !== s.direcao || aberto.entrada !== s.entrada);
+  if (novo) {
+    if (aberto) Object.assign(aberto, { resultado: "expirado", fechadoEm: agora }); // substituído
+    estado.sinais.push({ ...s, criadoEm: agora, ativo: a.ativo });
+    sons.xp();
+    if (vozLigada()) falar(falaDoSinal(s), { urgente: true });
+  } else if (vozLigada() && a.mudou && a.fala && s.direcao === "esperar" && estado.analiseAnterior?.sinal?.direcao !== "esperar") {
+    falar(a.fala);
+  }
+  renderSinal(novo ? s : aberto ?? s);
+}
+
+function renderSinal(s) {
+  const c = $("cartao-sinal");
+  c.hidden = false;
+  c.className = `cartao-sinal ${s.direcao}`;
+  c.classList.remove("novo");
+  void c.offsetWidth;
+  c.classList.add("novo");
+  $("sinal-direcao").textContent = ROTULO_DIRECAO[s.direcao];
+  $("sinal-conf").textContent = s.direcao === "esperar" ? "—" : `${s.confianca}%`;
+  $("sinal-conf-barra").style.width = `${s.direcao === "esperar" ? 0 : s.confianca}%`;
+  const dd = (rotulo, v, cls = "") => [h("dt", {}, rotulo), h("dd", { class: cls }, v ?? "—")];
+  $("sinal-niveis").replaceChildren(
+    ...(s.direcao === "esperar"
+      ? [h("dt", {}, "Agora"), h("dd", {}, "Sem vantagem clara. Esperar também é uma jogada.")]
+      : [...dd("Entrada", s.entrada), ...dd("Stop", s.stop, "neg"), ...dd("Alvo", s.alvo, "pos"), ...dd("R:R", s.rr ? `1 : ${s.rr}` : "—"), ...dd("Horizonte", `~${s.velas} velas`)])
+  );
+  $("sinal-razoes").replaceChildren(...s.razoes.map((r) => h("li", {}, r)));
+  $("sinal-noticias").replaceChildren(...s.noticias.map((n) => h("li", {}, "📰 ", n)));
+  const p = placar(estado.sinais);
+  $("sinal-placar").replaceChildren(
+    h("span", { class: "pos" }, `✓ ${p.acertos}`),
+    h("span", { class: "neg" }, `✕ ${p.erros}`),
+    h("span", {}, p.taxa == null ? "placar a zero" : `${p.taxa}% de acerto`)
+  );
+}
+
+function aplicarModo() {
+  const ataque = modoAtaque();
+  document.body.classList.toggle("modo-ataque", ataque);
+  $("bloco-modo").hidden = !estado.servidor;
+  document.querySelectorAll(".modo-op").forEach((b) => {
+    const ativo = b.dataset.modo === (ataque ? "ataque" : "disciplina");
+    b.classList.toggle("ativo", ativo);
+    b.setAttribute("aria-checked", String(ativo));
+  });
+  if (!ataque) $("cartao-sinal").hidden = true;
+  else if (!$("cartao-sinal").hidden || !estado.analiseAnterior?.sinal) {
+    $("cartao-sinal").hidden = false;
+    if (!estado.analiseAnterior?.sinal) renderSinal({ direcao: "esperar", confianca: 0, razoes: ["Carrega em Começar. Dou o primeiro sinal no fecho da próxima vela."], noticias: [] });
+  }
+  atualizarDisciplina();
+}
+document.querySelectorAll(".modo-op").forEach((b) =>
+  b.addEventListener("click", () => {
+    estado.modo = b.dataset.modo;
+    gravar("modo", estado.modo);
+    aplicarModo();
+    if (modoAtaque()) {
+      sons.xp();
+      toast([h("b", {}, "⚡ Modo Ataque"), h("span", {}, "Sinais diretos com entrada, stop e alvo. A IA pode errar.")]);
+      if (estado.ligado) ciclo({ forcar: true });
+    }
+  })
+);
 
 async function escolherEcra() {
   try {
@@ -602,10 +700,13 @@ async function ciclo({ forcar = false } = {}) {
     estadoCopiloto("A ler o gráfico…", true);
     $("varrimento").classList.add("ativo");
     estado.abort = new AbortController();
+    const sinalAberto = estado.sinais.find((s) => !s.resultado && s.direcao !== "esperar") ?? null;
     const r = await ligacaoIA().analisar({
       config: estado.config,
       imagemBase64: frame.base64,
       analiseAnterior: estado.analiseAnterior,
+      modo: modoAtaque() ? "ataque" : "disciplina",
+      sinalAberto,
       signal: estado.abort.signal,
     });
     estado.custoSessao += r.custo;
@@ -1304,6 +1405,7 @@ botaoIniciar(false);
   if (servidor) {
     estado.servidor = servidor;
     if (servidor.voz) usarVozExterna((texto) => ligacaoIA().voz(texto));
+    aplicarModo();
     document.querySelector(".custo").hidden = true;
     return entrarApp();
   }

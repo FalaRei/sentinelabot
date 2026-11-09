@@ -70,6 +70,17 @@
                 <div class="miniatura" id="miniatura" hidden></div>
                 <div class="varrimento" id="varrimento" aria-hidden="true"><i></i><span class="mono">a ler o gráfico</span></div>
               </div>
+              <div id="cartao-sinal" class="cartao-sinal esperar" hidden aria-live="polite">
+                <div class="sinal-topo">
+                  <span class="sinal-direcao" id="sinal-direcao">A ANALISAR</span>
+                  <div class="sinal-conf"><span>confiança</span><b class="mono" id="sinal-conf">—</b><i><em id="sinal-conf-barra"></em></i></div>
+                  <div class="sinal-placar mono" id="sinal-placar" title="Sinais fechados nesta sessão: alvo atingido / stop atingido"></div>
+                </div>
+                <dl class="sinal-niveis mono" id="sinal-niveis"></dl>
+                <ul class="sinal-razoes" id="sinal-razoes"></ul>
+                <ul class="sinal-noticias" id="sinal-noticias"></ul>
+                <p class="sinal-aviso">Modo Ataque · teste privado · a IA pode errar e tu podes perder dinheiro. Decides tu.</p>
+              </div>
               <div class="leitura">
                 <p class="rotulo-sec">Agora</p>
                 <p id="agora-fala" class="fala">Carrega em <b>Começar</b>. O Sentinela lê o gráfico no fecho de cada vela e avisa-te antes de quebrares uma regra.</p>
@@ -96,9 +107,18 @@
 
           <aside class="col-lateral">
             <div class="cartao controlos">
+              <div id="bloco-modo" class="modo-troca" role="radiogroup" aria-label="Modo" hidden>
+                <button type="button" class="modo-op ativo" data-modo="disciplina" role="radio" aria-checked="true">🛡 Disciplina</button>
+                <button type="button" class="modo-op" data-modo="ataque" role="radio" aria-checked="false">⚡ Ataque</button>
+              </div>
               <div id="bloco-plataforma" class="bloco-plataforma" hidden>
                 <p class="rotulo-sec">Onde tens o gráfico?</p>
                 <div id="plataformas" class="chips" role="radiogroup" aria-label="Plataforma do gráfico"></div>
+                <div class="abrir-sites">
+                  <a class="btn mini secundario" href="https://www.tradingview.com/chart/" target="_blank" rel="noopener">Abrir TradingView ↗</a>
+                  <a class="btn mini secundario" href="https://www.binance.com/pt/trade/BTC_USDT" target="_blank" rel="noopener">Binance ↗</a>
+                  <a class="btn mini secundario" href="https://xstation5.xtb.com/" target="_blank" rel="noopener">XTB ↗</a>
+                </div>
               </div>
               <ol class="passos">
                 <li><button id="btn-partilhar" class="btn secundario largo passo" type="button"><span class="num-passo">1</span><span class="txt-passo">Escolher a janela do gráfico</span></button></li>
@@ -352,6 +372,7 @@
     </main>
 
     <footer class="rodape">
+      <p class="criadores">Criado por <b>Vladimiro</b> · <b>Delcio</b> · <b>Luis</b></p>
       <a href="#cartao-apoio" id="link-apoio">Apoiar o projeto</a> ·
       O Sentinela é uma ferramenta educativa e de disciplina. Não é aconselhamento financeiro, não dá ordens de compra ou venda e não garante resultados. Trading envolve risco elevado de perda. Gráficos por <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts™</a>.
     </footer>

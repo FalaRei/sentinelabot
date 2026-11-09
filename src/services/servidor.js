@@ -41,8 +41,8 @@ export function ligarServidor(codigo, info, { fetchFn } = {}) {
   return {
     provedor: "servidor",
     modelo: info.ia,
-    analisar: async ({ config, imagemBase64, analiseAnterior, signal }) => {
-      const { analise } = await chamar(urlApi("analisar"), codigo, { config, imagemBase64, analiseAnterior }, { signal, fetchFn });
+    analisar: async ({ config, imagemBase64, analiseAnterior, modo, sinalAberto, signal }) => {
+      const { analise } = await chamar(urlApi("analisar"), codigo, { config, imagemBase64, analiseAnterior, modo, sinalAberto }, { signal, fetchFn });
       return { analise, custo: 0 };
     },
     perguntar: async ({ config, mensagens, aoReceber, signal }) => {

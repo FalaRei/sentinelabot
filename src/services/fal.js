@@ -4,6 +4,10 @@
 
 import { construirSistema, construirMensagemUtilizador, validarAnalise } from "../core/analysis.js";
 import { FORMATO_JSON, extrairJSON } from "./deepseek.js";
+import { construirSistemaAtaque, validarSinal, lerPreco, SCHEMA_SINAL } from "../core/ataque.js";
+
+const FORMATO_ATAQUE = `${FORMATO_JSON}
+Junta também ao objeto: "sinal" com os campos ${JSON.stringify(SCHEMA_SINAL.properties)} e "preco_atual" (string).`;
 import { ErroAnalise } from "./erros.js";
 
 const URL_VISAO = "https://fal.run/openrouter/router/vision";
@@ -37,7 +41,8 @@ async function pedir({ chave, url, corpo, signal, fetchFn = globalThis.fetch }) 
 
 export const usoFal = (d) => ({ entrada: d?.usage?.prompt_tokens ?? 0, saida: d?.usage?.completion_tokens ?? 0, custoUSD: d?.usage?.cost ?? 0 });
 
-export async function analisarEcraFal({ chave, modelo = MODELO_FAL, config, imagemBase64, mediaType = "image/jpeg", analiseAnterior, signal, fetchFn }) {
+export async function analisarEcraFal({ chave, modelo = MODELO_FAL, config, imagemBase64, mediaType = "image/jpeg", analiseAnterior, modo = "disciplina", sinalAberto = null, signal, fetchFn }) {
+  const ataque = modo === "ataque";
   const dados = await pedir({
     chave,
     url: URL_VISAO,
@@ -46,15 +51,23 @@ export async function analisarEcraFal({ chave, modelo = MODELO_FAL, config, imag
     corpo: {
       model: modelo,
       image_urls: [`data:${mediaType};base64,${imagemBase64}`],
-      system_prompt: `${construirSistema(config)}\n\n${FORMATO_JSON}`,
+      system_prompt: ataque ? `${construirSistemaAtaque(config, sinalAberto)}\n\n${FORMATO_ATAQUE}` : `${construirSistema(config)}\n\n${FORMATO_JSON}`,
       prompt: `${construirMensagemUtilizador(analiseAnterior)} Responde só com o JSON.`,
       reasoning: true, // obrigatório neste endpoint para este modelo
       max_tokens: 3000,
+      ...(ataque ? { enable_web_search: true } : {}), // notícias recentes do ativo
     },
   });
-  const analise = validarAnalise(extrairJSON(dados?.output));
+  const json = extrairJSON(dados?.output);
+  const analise = validarAnalise(json);
   if (!analise) throw new ErroAnalise("Resposta da IA ilegível. Tento na próxima vela.");
-  return { analise, usage: usoFal(dados) };
+  if (!ataque) return { analise, usage: usoFal(dados) };
+  let obj = {};
+  try {
+    obj = JSON.parse(json);
+  } catch {}
+  const sinal = validarSinal(obj.sinal) ?? validarSinal({ direcao: "esperar" });
+  return { analise: { ...analise, sinal, preco_atual: lerPreco(obj.preco_atual) }, usage: usoFal(dados) };
 }
 
 /** Chat: o endpoint de visão aceita texto sem imagem; a última captura vai junto, se houver. */

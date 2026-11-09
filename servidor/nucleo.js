@@ -54,6 +54,7 @@ export function configSegura(c = {}) {
   }
   return out;
 }
+const sinalSeguro = (x) => (x && typeof x === "object" && ["compra", "venda"].includes(x.direcao) ? { direcao: x.direcao, entrada: Number(x.entrada) || null, stop: Number(x.stop) || null, alvo: Number(x.alvo) || null } : null);
 const analiseAnteriorSegura = (a) => (a && typeof a === "object" ? { tendencia: txt(a.tendencia, 20), fala: txt(a.fala, 300) } : null);
 export function mensagensSeguras(lista) {
   if (!Array.isArray(lista)) return [];
@@ -86,7 +87,7 @@ export async function tratarPedido({ acao, metodo, codigo, ip = "?", corpo = {},
   try {
     if (acao === "analisar") {
       if (typeof corpo?.imagemBase64 !== "string" || !corpo.imagemBase64 || corpo.imagemBase64.length > 4_000_000) return { status: 400, json: { erro: "Imagem em falta ou demasiado grande." } };
-      const r = await ia.analisar({ chave: ia.chave, modelo: ia.modelo, config: configSegura(corpo.config), imagemBase64: corpo.imagemBase64, mediaType: "image/jpeg", analiseAnterior: analiseAnteriorSegura(corpo.analiseAnterior) });
+      const r = await ia.analisar({ chave: ia.chave, modelo: ia.modelo, config: configSegura(corpo.config), imagemBase64: corpo.imagemBase64, mediaType: "image/jpeg", analiseAnterior: analiseAnteriorSegura(corpo.analiseAnterior), modo: corpo.modo === "ataque" ? "ataque" : "disciplina", sinalAberto: sinalSeguro(corpo.sinalAberto) });
       return { status: 200, json: { analise: r.analise }, uso: r.usage };
     }
     if (acao === "perguntar") {

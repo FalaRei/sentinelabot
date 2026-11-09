@@ -512,3 +512,43 @@ main { padding: 20px; max-width: 1360px; margin: 0 auto; }
 /* ---------- assistente: passos grandes, pouco texto ---------- */
 .ass-resumo li { display: flex; align-items: center; gap: 14px; font-size: 16px; }
 .ass-num { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; flex: none; background: var(--acento); color: var(--acento-tinta); font: 650 15px var(--f-mono); }
+
+/* ---------- Modo Ataque ---------- */
+.modo-troca { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: 12px; background: var(--painel-2); border: 1px solid var(--linha); }
+.modo-op { appearance: none; border: 0; border-radius: 9px; padding: 9px 8px; font: 650 14px var(--f-texto); color: var(--tinta-2); background: transparent; cursor: pointer; transition: background .2s, color .2s, box-shadow .2s; }
+.modo-op.ativo { background: var(--painel); color: var(--tinta); box-shadow: var(--sombra); }
+.modo-ataque .modo-op[data-modo="ataque"].ativo { background: #111827; color: #fbbf24; box-shadow: 0 0 0 1px #fbbf24, 0 6px 18px -6px rgba(251, 191, 36, .6); }
+.modo-ataque .topo { box-shadow: inset 0 -2px 0 #fbbf24; }
+
+.cartao-sinal { --cor: var(--tinta-3); --cor-suave: var(--painel-2); margin: 0; padding: 18px; border-bottom: 1px solid var(--linha); background: linear-gradient(135deg, var(--cor-suave), transparent 70%); position: relative; overflow: hidden; }
+.cartao-sinal.compra { --cor: var(--sobe); --cor-suave: var(--sobe-suave); }
+.cartao-sinal.venda { --cor: var(--desce); --cor-suave: var(--desce-suave); }
+.cartao-sinal.novo { animation: sinal-entra .6s cubic-bezier(.2, .9, .3, 1.2); }
+.cartao-sinal.novo::after { content: ""; position: absolute; inset: 0; border: 2px solid var(--cor); border-radius: inherit; animation: sinal-brilho 1.4s ease-out forwards; pointer-events: none; }
+@keyframes sinal-entra { from { transform: scale(.98); opacity: .4; } }
+@keyframes sinal-brilho { from { opacity: 1; box-shadow: inset 0 0 40px var(--cor-suave); } to { opacity: 0; } }
+.sinal-topo { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.sinal-direcao { font: 800 30px/1 var(--f-mono); letter-spacing: .02em; color: var(--cor); }
+.sinal-conf { display: grid; grid-template-columns: auto auto; align-items: center; gap: 2px 10px; min-width: 150px; }
+.sinal-conf span { font-size: 11.5px; color: var(--tinta-3); text-transform: uppercase; letter-spacing: .06em; }
+.sinal-conf b { font-size: 20px; font-weight: 600; text-align: right; }
+.sinal-conf i { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--grelha); overflow: hidden; }
+.sinal-conf em { display: block; height: 100%; width: 0; background: var(--cor); border-radius: 3px; transition: width .8s cubic-bezier(.2, .8, .2, 1); }
+.sinal-placar { margin-left: auto; display: flex; gap: 10px; font-size: 13px; color: var(--tinta-2); background: var(--painel); border: 1px solid var(--linha); border-radius: 999px; padding: 5px 12px; }
+.sinal-niveis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px 12px; margin: 16px 0 10px; }
+.sinal-niveis dt { font: 500 11px var(--f-texto); color: var(--tinta-3); text-transform: uppercase; letter-spacing: .06em; grid-row: 1; }
+.sinal-niveis dd { margin: 0; font-size: 17px; font-weight: 600; grid-row: 2; }
+.sinal-niveis dt:only-of-type { grid-column: 1 / -1; }
+.sinal-niveis dt:only-of-type + dd { grid-column: 1 / -1; font: 500 15px var(--f-texto); }
+.sinal-razoes, .sinal-noticias { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 14px; color: var(--tinta-2); }
+.sinal-razoes li::before { content: "› "; color: var(--cor); font-weight: 700; }
+.sinal-noticias { margin-top: 8px; font-size: 13px; }
+.sinal-aviso { margin: 12px 0 0; font-size: 11.5px; color: var(--tinta-3); }
+.abrir-sites { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.criadores { margin: 0 0 8px; font-size: 13px; color: var(--tinta-2); letter-spacing: .02em; }
+.criadores b { color: var(--tinta); font-weight: 650; }
+@media (max-width: 760px) {
+  .sinal-niveis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .sinal-niveis dt, .sinal-niveis dd { grid-row: auto; }
+  .sinal-placar { margin-left: 0; }
+}

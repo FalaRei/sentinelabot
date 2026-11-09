@@ -403,3 +403,6 @@ input[type=range] { width: 100%; accent-color: var(--acento); height: 28px; }
 .prop-voz { margin: 0; display: flex; gap: 10px; align-items: flex-start; padding: 14px; border-radius: 10px; background: color-mix(in srgb, var(--desce) 9%, transparent); border-left: 3px solid var(--desce); font-size: 14.5px; color: var(--tinta); }
 .prop-voz .ico { color: var(--desce); margin-top: 2px; }
 @media (max-width: 960px) { .prop-grelha { grid-template-columns: minmax(0, 1fr); gap: 32px; } }
+
+.criadores { font-size: 14px; color: var(--tinta-2); letter-spacing: .02em; }
+.criadores b { color: var(--tinta); font-weight: 650; }
