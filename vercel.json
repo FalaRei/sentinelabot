@@ -2,7 +2,6 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run site",
   "outputDirectory": "dist",
-  "trailingSlash": true,
   "functions": {
     "api/[acao].js": {
       "maxDuration": 60
@@ -29,6 +28,13 @@
           "value": "display-capture=(self), microphone=(self), camera=(), geolocation=(), payment=()"
         }
       ]
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/app",
+      "destination": "/app/",
+      "permanent": true
     }
   ]
 }

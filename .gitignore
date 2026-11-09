@@ -12,3 +12,6 @@ site/app
 .claude/
 # estratégia comercial: fica só no teu PC (o repositório é público)
 marketing/
+
+.vercel
+.env*
