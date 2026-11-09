@@ -30,11 +30,10 @@
       ]
     }
   ],
-  "redirects": [
+  "rewrites": [
     {
       "source": "/app",
-      "destination": "/app/",
-      "permanent": true
+      "destination": "/app/index.html"
     }
   ]
 }
