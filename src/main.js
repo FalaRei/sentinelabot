@@ -1293,14 +1293,15 @@ $("ass-seguinte").addEventListener("click", () => {
 // ---------- arranque ----------
 botaoIniciar(false);
 (async () => {
-  const servidor = await detetarServidor();
+  // Modo de teste só com o código do convite (no link ou já guardado); sem ele, a app funciona como sempre.
+  const doLink = new URLSearchParams(location.search).get("codigo");
+  if (doLink) {
+    estado.codigo = doLink;
+    gravar("codigo", doLink);
+    history.replaceState(null, "", location.pathname); // tira o código da barra de endereço
+  }
+  const servidor = estado.codigo ? await detetarServidor() : null;
   if (servidor) {
-    const doLink = new URLSearchParams(location.search).get("codigo");
-    if (doLink) {
-      estado.codigo = doLink;
-      gravar("codigo", doLink);
-      history.replaceState(null, "", location.pathname); // tira o código da barra de endereço
-    }
     estado.servidor = servidor;
     if (servidor.voz) usarVozExterna((texto) => ligacaoIA().voz(texto));
     document.querySelector(".custo").hidden = true;
