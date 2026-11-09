@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sentinela · Cockpit</title>
+  <meta name="description" content="Copiloto de trading com IA: vê o teu ecrã, explica o gráfico em voz alta e trava os erros que fazem perder dinheiro." />
+  <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b0e14" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231d4ed8'/><path d='M16 6.5 8.5 9.5v5.6c0 4.7 3.2 8.5 7.5 9.6 4.3-1.1 7.5-4.9 7.5-9.6V9.5z' fill='none' stroke='white' stroke-width='2'/><path d='m12.5 16 2.5 2.5 4.5-5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="../src/styles.css" />
+</head>
+<body>
+  <!-- Ativação -->
+  <section id="ecra-licenca" class="ecra-licenca" hidden>
+    <div class="licenca">
+      <svg class="ico-marca-grande" viewBox="0 0 32 32" aria-hidden="true"><use href="#i-marca" /></svg>
+      <h1>Sentinela</h1>
+      <p class="sub">O copiloto que trava os erros que fazem a maioria dos traders perder dinheiro.</p>
+      <label for="input-licenca">Chave de licença</label>
+      <input id="input-licenca" placeholder="SENT-XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false" />
+      <p id="erro-licenca" class="erro" hidden></p>
+      <button id="btn-ativar" class="btn primario largo" type="button">Ativar licença</button>
+      <button id="btn-demo" class="btn secundario largo" type="button">Entrar na demonstração grátis</button>
+    </div>
+  </section>
+
+  <div id="app" hidden>
+    <header class="topo">
+      <div class="marca"><svg class="ico-marca" viewBox="0 0 32 32" aria-hidden="true"><use href="#i-marca" /></svg>Sentinela</div>
+      <div id="estado-disciplina" class="estado ok"><i></i><span>Livre para operar</span></div>
+      <span id="chip-sessao" class="chip-sessao mono" title="A tua janela de operação"><svg class="ico" aria-hidden="true"><use href="#i-relogio" /></svg><span>—</span></span>
+      <button id="chip-patente" class="chip-patente" type="button" title="Ver a tua progressão">
+        <span class="chip-nivel mono" id="chip-nivel">01</span>
+        <span class="chip-txt"><b id="chip-nome">Recruta</b><span class="chip-barra"><i id="chip-barra"></i></span></span>
+        <span class="chip-seq mono" id="chip-seq" title="Dias seguidos com disciplina ≥ 80"><svg class="ico" aria-hidden="true"><use href="#i-chama" /></svg><b>0</b></span>
+      </button>
+      <div class="topo-dir">
+        <span id="pilula-modo" class="pilula">Demonstração</span>
+        <span class="custo mono" title="Custo da IA nesta sessão (pago pela tua chave à Google ou à Anthropic)">API <b id="custo-sessao">$0.000</b></span>
+      </div>
+    </header>
+
+    <nav class="separadores" role="tablist" aria-label="Secções">
+      <button class="sep ativo" data-sep="copiloto" role="tab" type="button"><svg class="ico" aria-hidden="true"><use href="#i-radar" /></svg>Sessão</button>
+      <button class="sep" data-sep="dia" role="tab" type="button"><svg class="ico" aria-hidden="true"><use href="#i-livro" /></svg>O meu dia</button>
+      <button class="sep" data-sep="definicoes" role="tab" type="button"><svg class="ico" aria-hidden="true"><use href="#i-ajustes" /></svg>Definições</button>
+    </nav>
+
+    <div id="banner-bloqueio" class="banner" role="alert" hidden></div>
+
+    <main>
+      <!-- COPILOTO -->
+      <section id="sep-copiloto" class="painel ativo">
+        <div class="grelha-copiloto">
+          <div class="col-principal">
+            <div class="ecra">
+              <div class="ecra-topo">
+                <span class="mono"><b id="agora-ativo">EURUSD</b> · <span id="agora-tf">M5</span></span>
+                <span id="agora-tendencia" class="tendencia indefinida">sem leitura</span>
+                <span id="ao-vivo" class="ao-vivo-app" hidden><i></i>a vigiar</span>
+                <span id="etiqueta-fonte" class="fonte mono">mercado simulado</span>
+              </div>
+              <div id="confirmacao-leitura" class="conf-leitura" role="status" hidden></div>
+              <div class="ecra-corpo">
+                <div id="grafico-demo" class="grafico-host"></div>
+                <div class="miniatura" id="miniatura" hidden></div>
+                <div class="varrimento" id="varrimento" aria-hidden="true"><i></i><span class="mono">a ler o gráfico</span></div>
+              </div>
+              <div class="leitura">
+                <p class="rotulo-sec">Agora</p>
+                <p id="agora-fala" class="fala">Carrega em <b>Começar</b>. O Sentinela lê o gráfico no fecho de cada vela e avisa-te antes de quebrares uma regra.</p>
+                <div class="leitura-grelha">
+                  <div><p class="rotulo-sec">O que vejo</p><ul id="agora-obs" class="lista"></ul></div>
+                  <div><p class="rotulo-sec">Zonas</p><ul id="agora-niveis" class="lista niveis"></ul></div>
+                  <div id="bloco-checklist" hidden><p class="rotulo-sec">As tuas regras <span id="estado-setup" class="estado-setup"></span></p><ul id="agora-checklist" class="lista checklist"></ul></div>
+                </div>
+                <div class="indicacoes" id="bloco-indicacoes" hidden>
+                  <div class="cenarios">
+                    <p class="rotulo-sec">Cenários <span class="nao-recomendacao">não são recomendações</span></p>
+                    <ul id="agora-cenarios" class="lista-cenarios"></ul>
+                  </div>
+                  <div class="invalidacao" id="bloco-invalidacao">
+                    <p class="rotulo-sec">Zona de invalidação</p>
+                    <p><b id="inv-preco" class="mono">—</b></p>
+                    <p id="inv-razao" class="pequeno"></p>
+                    <p class="pequeno">Referência para decidires o teu stop. A decisão é tua.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <aside class="col-lateral">
+            <div class="cartao controlos">
+              <div id="bloco-plataforma" class="bloco-plataforma" hidden>
+                <p class="rotulo-sec">Onde tens o gráfico?</p>
+                <div id="plataformas" class="chips" role="radiogroup" aria-label="Plataforma do gráfico"></div>
+              </div>
+              <ol class="passos">
+                <li><button id="btn-partilhar" class="btn secundario largo passo" type="button"><span class="num-passo">1</span><span class="txt-passo">Escolher a janela do gráfico</span></button></li>
+                <li><button id="btn-iniciar" class="btn primario largo passo" type="button"><span class="num-passo">2</span><span class="txt-passo">Começar</span></button></li>
+              </ol>
+              <p id="dica-passo" class="dica-passo"></p>
+              <div class="linha-campos">
+                <label>Velas do teu gráfico
+                  <select id="sel-tf"></select>
+                </label>
+                <label>A voz fala
+                  <select id="sel-modo">
+                    <option value="importante">Só o importante</option>
+                    <option value="explicar">Explica tudo</option>
+                  </select>
+                </label>
+              </div>
+              <div class="interruptores">
+                <label class="interruptor"><input type="checkbox" id="chk-voz" checked /><span>Voz</span></label>
+                <label class="interruptor"><input type="checkbox" id="chk-som" checked /><span>Sons</span></label>
+                <button id="btn-ler-agora" class="btn mini secundario" type="button" hidden>Ler agora</button>
+              </div>
+              <p class="estado-linha mono" id="estado-copiloto">Parado.</p>
+            </div>
+
+            <div class="cartao limites" id="cartao-limites">
+              <h2><span id="limites-titulo">Os teus limites</span> <button id="btn-mudar-conta" class="btn mini secundario" type="button">mudar</button></h2>
+              <div id="limites-barras" class="limites-barras"></div>
+              <div class="instrumentos-app">
+                <div class="instr">
+                  <svg viewBox="0 0 120 70" class="gauge" aria-hidden="true">
+                    <path d="M12 62a48 48 0 0 1 96 0" class="gauge-fundo" />
+                    <path id="gauge-arco" d="M12 62a48 48 0 0 1 96 0" class="gauge-valor" pathLength="100" stroke-dasharray="0 100" />
+                  </svg>
+                  <div><b id="gauge-num" class="mono">—</b><span>disciplina hoje</span></div>
+                </div>
+                <div class="instr"><b id="instr-pnl" class="mono">0,00 €</b><span>resultado hoje</span></div>
+                <div class="instr"><b id="instr-perdas" class="mono">0</b><span>perdas seguidas</span></div>
+              </div>
+            </div>
+
+            <div class="cartao" id="cartao-entrar">
+              <h2>Antes de entrar num trade</h2>
+              <form id="form-calc">
+                <div class="linha-campos tres">
+                  <label>Entrada<input type="number" step="any" id="calc-entrada" required inputmode="decimal" /></label>
+                  <label>Stop<input type="number" step="any" id="calc-stop" required inputmode="decimal" /></label>
+                  <label><span>Alvo <small>(opcional)</small></span><input type="number" step="any" id="calc-alvo" inputmode="decimal" /></label>
+                </div>
+                <button class="btn primario largo" type="submit">Verificar o trade</button>
+              </form>
+              <div id="calc-resultado" class="calc-resultado" hidden></div>
+              <div id="abertos" class="abertos" hidden>
+                <p class="rotulo-sec">Trades abertos</p>
+                <ul id="lista-abertos" class="lista-abertos"></ul>
+              </div>
+            </div>
+
+            <div class="cartao chat">
+              <h2>Pergunta ao copiloto</h2>
+              <ol id="chat-mensagens" class="chat-mensagens" aria-live="polite"></ol>
+              <form id="form-chat" class="chat-form">
+                <input id="chat-input" autocomplete="off" placeholder="Ex: onde ficaria um stop técnico?" aria-label="Pergunta ao copiloto" />
+                <button id="btn-microfone" class="btn secundario btn-icone" type="button" title="Perguntar por voz" aria-label="Perguntar por voz"><svg class="ico" aria-hidden="true"><use href="#i-micro" /></svg></button>
+                <button class="btn primario btn-icone" type="submit" title="Enviar" aria-label="Enviar pergunta"><svg class="ico" aria-hidden="true"><use href="#i-enviar" /></svg></button>
+              </form>
+              <div class="sugestoes" id="chat-sugestoes">
+                <button type="button" class="sugestao">Onde ficaria um stop técnico?</button>
+                <button type="button" class="sugestao">Devo entrar agora?</button>
+                <button type="button" class="sugestao">Quanto posso perder hoje?</button>
+              </div>
+            </div>
+
+            <div class="cartao">
+              <h2>Registo <button id="btn-limpar-alertas" class="btn mini secundario" type="button">limpar</button></h2>
+              <ol id="feed-alertas" class="feed"></ol>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <!-- O MEU DIA: progresso + diário -->
+      <section id="sep-dia" class="painel">
+        <div class="estatisticas" id="estatisticas"></div>
+        <div class="grelha-graficos">
+          <figure class="cartao figura">
+            <figcaption><h2>Curva de capital</h2><span class="pequeno">Resultado acumulado de todos os trades fechados</span></figcaption>
+            <div id="grafico-capital" class="grafico-diario"></div>
+            <p id="capital-vazio" class="vazio" hidden>A curva aparece quando fechares o primeiro trade.</p>
+          </figure>
+          <figure class="cartao figura">
+            <figcaption><h2>Disciplina por dia</h2><span class="pequeno">Meta: 80 ou mais</span></figcaption>
+            <div id="grafico-disciplina" class="grafico-diario"></div>
+            <p id="disciplina-vazio" class="vazio" hidden>Ainda sem dias registados.</p>
+          </figure>
+        </div>
+        <div class="grelha-2">
+          <form id="form-trade" class="cartao">
+            <h2>Registar trade</h2>
+            <div class="linha-campos">
+              <label>Ativo<input id="t-ativo" required placeholder="EURUSD" /></label>
+              <label>Direção
+                <select id="t-direcao"><option value="compra">Compra</option><option value="venda">Venda</option></select>
+              </label>
+            </div>
+            <div class="linha-campos tres">
+              <label>Entrada<input type="number" step="any" id="t-entrada" required /></label>
+              <label>Stop<input type="number" step="any" id="t-stop" /></label>
+              <label>Quantidade<input type="number" step="any" id="t-qtd" required /></label>
+            </div>
+            <div class="linha-campos">
+              <label>Resultado (€)<input type="number" step="any" id="t-resultado" placeholder="vazio = ainda aberto" /></label>
+              <label>Nota<input id="t-nota" placeholder="porque entrei?" /></label>
+            </div>
+            <label class="interruptor"><input type="checkbox" id="t-plano" checked /><span>Este trade seguiu o meu plano</span></label>
+            <button class="btn primario largo" type="submit">Guardar no diário</button>
+          </form>
+          <div class="cartao">
+            <h2>Relatório de hoje</h2>
+            <div id="relatorio"></div>
+            <div class="acoes">
+              <button id="btn-exemplo" class="btn secundario" type="button">Carregar diário de exemplo</button>
+              <button id="btn-csv" class="btn secundario" type="button">Exportar CSV</button>
+              <button id="btn-apagar-diario" class="btn secundario perigo" type="button">Apagar diário</button>
+            </div>
+            <div id="confirmacao" class="confirmacao" hidden></div>
+          </div>
+        </div>
+        <div class="cartao">
+          <h2>Trades</h2>
+          <div class="tabela-wrap">
+            <table class="tabela">
+              <thead><tr><th>Quando</th><th>Ativo</th><th>Dir.</th><th>Entrada</th><th>Stop</th><th>Qtd</th><th>Resultado</th><th>Plano</th><th></th></tr></thead>
+              <tbody id="tabela-trades"></tbody>
+            </table>
+          </div>
+        </div>
+        <h2 class="titulo-secao">A tua progressão</h2>
+        <div class="cartao patente-heroi">
+          <div class="insignia-grande mono" id="p-insignia">01</div>
+          <div class="patente-info">
+            <p class="rotulo-sec">A tua patente</p>
+            <h2 id="p-nome">Recruta</h2>
+            <div class="barra-xp"><i id="p-barra"></i></div>
+            <p class="mono pequeno" id="p-xp">0 XP</p>
+          </div>
+          <div class="patente-numeros">
+            <div><b class="mono" id="p-seq">0</b><span>dias seguidos com disciplina ≥ 80</span></div>
+            <div><b class="mono" id="p-conq">0/7</b><span>conquistas</span></div>
+          </div>
+        </div>
+        <div class="grelha-2">
+          <div class="cartao">
+            <h2>Conquistas</h2>
+            <ul id="p-conquistas" class="lista-conquistas"></ul>
+          </div>
+          <div class="cartao">
+            <h2>Como ganhas XP</h2>
+            <ul class="lista-xp mono">
+              <li><span>Trade com stop loss</span><b>+10</b></li>
+              <li><span>Trade dentro do plano</span><b>+20</b></li>
+              <li><span>Trade registado com nota</span><b>+5</b></li>
+              <li><span>Cumprir uma pausa obrigatória</span><b>+15</b></li>
+              <li><span>Fechar um dia com 100 de disciplina</span><b>+30</b></li>
+              <li class="zero"><span>Lucro, número de trades</span><b>0</b></li>
+            </ul>
+            <p class="pequeno">O Sentinela nunca te dá pontos por lucro nem por fazeres mais trades. Isso só te empurrava para o erro.</p>
+            <h2 class="mt">Últimos pontos</h2>
+            <ol id="p-eventos" class="feed"></ol>
+          </div>
+        </div>
+      </section>
+
+      <!-- DEFINIÇÕES -->
+      <section id="sep-definicoes" class="painel">
+        <form id="form-defs" class="grelha-2">
+          <div class="cartao">
+            <h2>A tua conta</h2>
+            <div id="d-modelos-conta" class="opcoes-conta" role="radiogroup" aria-label="Tipo de conta"></div>
+            <div class="linha-campos">
+              <label><span id="rotulo-saldo">Tamanho da conta (€)</span><input type="number" step="any" id="d-saldo" min="1" /></label>
+              <label>Risco máx. por trade (%)<input type="number" step="any" id="d-risco" min="0.1" /></label>
+            </div>
+            <div class="linha-campos">
+              <label>Perda máx. por dia (%)<input type="number" step="any" id="d-perda" min="0.1" /></label>
+              <label><span>Perda máx. total (%) <small>0 = sem limite</small></span><input type="number" step="any" id="d-perdatotal" min="0" /></label>
+            </div>
+            <div class="linha-campos">
+              <label><span>Meta do desafio (%) <small>0 = sem meta</small></span><input type="number" step="any" id="d-metadesafio" min="0" /></label>
+              <label>Máx. trades por dia<input type="number" id="d-maxtrades" min="1" /></label>
+            </div>
+            <p class="ajuda">Os modelos de desafio são valores típicos, não as regras oficiais de nenhuma empresa. Confirma os números da tua prop firm e corrige-os aqui.</p>
+            <details class="avancado">
+              <summary>Mais regras: horário, pausas, notícias e estratégia</summary>
+              <div class="linha-campos">
+                <label>Pausa após X perdas seguidas<input type="number" id="d-pausaperdas" min="1" /></label>
+                <label>Duração da pausa (min)<input type="number" id="d-minpausa" min="1" /></label>
+              </div>
+              <div class="linha-campos">
+                <label>Começo a operar às<input type="time" id="d-hini" /></label>
+                <label>Paro de operar às<input type="time" id="d-hfim" /></label>
+              </div>
+              <div class="linha-campos">
+                <label>Meta diária (% da conta, 0 = sem meta)<input type="number" step="any" id="d-meta" min="0" /></label>
+                <label>Aviso de euforia após X ganhos<input type="number" id="d-euforia" min="0" /></label>
+              </div>
+              <div class="linha-campos">
+                <label>Notícias de hoje (uma por linha)<textarea id="d-noticias" rows="3" placeholder="14:30 NFP&#10;20:00 Fed"></textarea></label>
+                <label>Sem trades X min antes/depois<input type="number" id="d-minnoticia" min="0" /></label>
+              </div>
+              <label>A tua estratégia (uma regra por linha; o copiloto verifica cada uma no gráfico)
+                <textarea id="d-regras" rows="4" placeholder="- Só opero a favor da tendência do gráfico de 1 hora&#10;- Só entro com risco/retorno de pelo menos 1:2"></textarea>
+              </label>
+            </details>
+            <button class="btn primario largo" type="submit">Guardar</button>
+            <p id="defs-ok" class="ok-msg" hidden>Guardado.</p>
+          </div>
+          <div class="pilha">
+            <div class="cartao">
+              <h2>Inteligência artificial</h2>
+              <p id="aviso-teste" class="resultado-chave ok" hidden>✓ Modo de teste: a IA já está ligada. Não precisas de chave.</p>
+              <label class="so-chave"><span>Chave da IA <small>(Google ou Anthropic)</small></span>
+                <input type="password" id="d-apikey" placeholder="AIza... ou sk-ant-..." autocomplete="off" />
+              </label>
+              <p class="ajuda so-chave" id="d-provedor"></p>
+              <div class="acoes acoes-chave so-chave">
+                <button type="button" id="btn-testar-chave" class="btn secundario">Testar a chave</button>
+                <button type="button" id="btn-guia-chave" class="btn secundario">Ainda não tenho chave: criar em 2 min</button>
+              </div>
+              <p id="resultado-chave" class="resultado-chave" role="status" hidden></p>
+              <p class="ajuda so-chave">A chave fica só neste browser e vai diretamente para a Google ou a Anthropic. Sem chave, o Sentinela funciona em demonstração.</p>
+              <details class="avancado">
+                <summary>Escolher outro modelo</summary>
+                <label>Modelo<select id="d-modelo"></select></label>
+              </details>
+              <p class="ajuda" id="estimativa-custo"></p>
+              <h2 class="mt">Voz</h2>
+              <p class="ajuda" id="info-voz"></p>
+              <div class="acoes"><button type="button" id="btn-testar-voz" class="btn secundario">Ouvir a voz</button><button type="button" id="btn-assistente" class="btn secundario">Repetir a configuração inicial</button></div>
+              <p class="ajuda" id="info-licenca"></p>
+            </div>
+            <div class="cartao apoio-texto" id="cartao-apoio">
+              <h2>O Sentinela está a ajudar-te?</h2>
+              <p>Se te tem ajudado a ter mais disciplina, podes apoiar o projeto com o valor que quiseres. É voluntário, não desbloqueia funções e não depende dos teus resultados no mercado.</p>
+              <div id="apoio-botoes" class="apoio-botoes"></div>
+              <p id="apoio-vazio" class="vazio" hidden>O vendedor ainda não configurou nenhuma forma de apoio. Para as ativar, preenche a secção APOIO em <code>src/config.js</code>.</p>
+            </div>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="rodape">
+      <a href="#cartao-apoio" id="link-apoio">Apoiar o projeto</a> ·
+      O Sentinela é uma ferramenta educativa e de disciplina. Não é aconselhamento financeiro, não dá ordens de compra ou venda e não garante resultados. Trading envolve risco elevado de perda. Gráficos por <a href="https://www.tradingview.com/" target="_blank" rel="noopener">TradingView Lightweight Charts™</a>.
+    </footer>
+  </div>
+
+  <div id="assistente" class="assistente" hidden role="dialog" aria-modal="true" aria-labelledby="ass-titulo">
+    <div class="ass-caixa">
+      <div class="ass-progresso" aria-hidden="true"><i></i><i></i><i></i></div>
+      <p class="rotulo-sec" id="ass-passo">Passo 1 de 3</p>
+      <h2 id="ass-titulo">Como vais operar?</h2>
+      <div id="ass-corpo" class="ass-corpo"></div>
+      <div class="ass-acoes">
+        <button id="ass-voltar" class="btn secundario" type="button">Voltar</button>
+        <button id="ass-seguinte" class="btn primario" type="button">Seguinte</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="guia-chave" class="assistente" hidden role="dialog" aria-modal="true" aria-labelledby="gc-titulo">
+    <div class="ass-caixa">
+      <h2 id="gc-titulo">Criar a tua chave da IA</h2>
+      <div class="gc-abas" role="tablist">
+        <button type="button" class="gc-aba ativa" data-gc="google" role="tab" aria-selected="true">Google Gemini <small>recomendado · mais barato</small></button>
+        <button type="button" class="gc-aba" data-gc="anthropic" role="tab" aria-selected="false">Anthropic Claude</button>
+      </div>
+      <ol class="gc-passos" id="gc-google">
+        <li><b>1</b><div><strong>Abre o Google AI Studio</strong> e entra com a tua conta Google.<a class="btn primario gc-abrir" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Abrir o Google AI Studio ↗</a></div></li>
+        <li><b>2</b><div><strong>Cria uma chave</strong> no botão para criar uma chave de API (em inglês, <i>Create API key</i>).</div></li>
+        <li><b>3</b><div><strong>Ativa a faturação</strong> (<i>Billing</i>) na conta. Sem faturação a chave funciona com limites baixos e a Google pode usar os dados para melhorar os produtos. O custo costuma ser de poucos dólares por mês.</div></li>
+        <li><b>4</b><div><strong>Copia a chave</strong> (começa por <code>AIza</code>), cola-a aqui em baixo e carrega em Testar.</div></li>
+      </ol>
+      <ol class="gc-passos" id="gc-anthropic" hidden>
+        <li><b>1</b><div><strong>Abre a consola da Anthropic</strong> e cria uma conta.<a class="btn primario gc-abrir" href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">Abrir console.anthropic.com ↗</a></div></li>
+        <li><b>2</b><div><strong>Carrega saldo</strong> na conta (<i>Billing</i>). 5 a 10 dólares chegam para começar.</div></li>
+        <li><b>3</b><div><strong>Cria uma chave</strong> (<i>Create Key</i>), copia-a (começa por <code>sk-ant-</code>), cola-a aqui e carrega em Testar.</div></li>
+      </ol>
+      <label class="gc-campo"><span>Cola aqui a tua chave</span><input type="password" id="gc-chave" autocomplete="off" placeholder="AIza... ou sk-ant-..." /></label>
+      <p id="gc-resultado" class="resultado-chave" role="status" hidden></p>
+      <div class="ass-acoes">
+        <button id="gc-fechar" class="btn secundario" type="button">Fechar</button>
+        <button id="gc-testar" class="btn primario" type="button">Testar e guardar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+  <div id="subiu" class="subiu" hidden role="dialog" aria-modal="true" aria-labelledby="subiu-nome">
+    <div class="subiu-caixa">
+      <p class="rotulo-sec">Nova patente</p>
+      <div class="insignia-grande mono" id="subiu-insignia">02</div>
+      <h2 id="subiu-nome">Cadete</h2>
+      <p id="subiu-txt" class="pequeno">Ganhaste esta patente por seres disciplinado.</p>
+      <button id="subiu-ok" class="btn primario" type="button">Continuar</button>
+    </div>
+  </div>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-marca" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="var(--acento)" /><path d="M16 6.5 8.5 9.5v5.6c0 4.7 3.2 8.5 7.5 9.6 4.3-1.1 7.5-4.9 7.5-9.6V9.5z" fill="none" stroke="var(--acento-tinta)" stroke-width="2" /><path d="m12.5 16 2.5 2.5 4.5-5" fill="none" stroke="var(--acento-tinta)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+    <symbol id="i-relogio" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M12 7.5V12l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></symbol>
+    <symbol id="i-micro" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></symbol>
+    <symbol id="i-enviar" viewBox="0 0 24 24"><path d="M4 12 20 4l-6 16-3-6.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></symbol>
+    <symbol id="i-cafe" viewBox="0 0 24 24"><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2.5M12 3.5v2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+    <symbol id="i-coracao" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.3a4.3 4.3 0 0 1 7.5 2.5C19.5 15.4 12 20 12 20z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l12-7.5z" fill="currentColor" /></symbol>
+    <symbol id="i-parar" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" fill="currentColor" /></symbol>
+    <symbol id="i-ecra" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M8.5 20h7M12 16.5V20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></symbol>
+    <symbol id="i-radar" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8" /><circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M12 12 18 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></symbol>
+    <symbol id="i-calc" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M8.5 7.5h7M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 16h.01M12 16h.01M15.5 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></symbol>
+    <symbol id="i-livro" viewBox="0 0 24 24"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5zM5 19.5A1.5 1.5 0 0 0 6.5 21H19" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /><path d="M9 8h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></symbol>
+    <symbol id="i-medalha" viewBox="0 0 24 24"><circle cx="12" cy="14.5" r="5.5" fill="none" stroke="currentColor" stroke-width="1.8" /><path d="M8.5 10 6 3h4l2 4 2-4h4l-2.5 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></symbol>
+    <symbol id="i-ajustes" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /><circle cx="16" cy="7" r="2" fill="none" stroke="currentColor" stroke-width="1.8" /><circle cx="10" cy="17" r="2" fill="none" stroke="currentColor" stroke-width="1.8" /></symbol>
+    <symbol id="i-chama" viewBox="0 0 24 24"><path d="M12 2.5c.8 3.4 4.5 5.4 4.5 10a4.5 4.5 0 1 1-9 0c0-2 .9-3.4 2-4.5.2 1.5 1 2.5 2 3 .3-2.8-.7-5.5.5-8.5z" fill="currentColor" /></symbol>
+  </svg>
+
+  <script type="module" src="../src/main.js"></script>
+</body>
+</html>

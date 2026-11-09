@@ -1,0 +1,8 @@
+# Cabeçalhos de segurança (Netlify lê este ficheiro; o npm run servir também, para testares em casa).
+# A app guarda a chave da IA no browser do cliente: a Content-Security-Policy impede que código
+# de outros sites corra na página e a possa ler. Só fala com a Google e a Anthropic.
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'self' https://api.anthropic.com https://generativelanguage.googleapis.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: display-capture=(self), microphone=(self), camera=(), geolocation=(), payment=()

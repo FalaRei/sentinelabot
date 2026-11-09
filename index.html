@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Sentinela · Copiloto de Trading</title>
+  <meta name="description" content="Não percas o teu desafio de prop firm por quebrar uma regra. O Sentinela vê o teu gráfico e avisa-te em voz alta, em português, antes de passares o limite diário, arriscares demais ou entrares sem stop." />
+  <meta property="og:title" content="Sentinela · Disciplina de profissional em cada trade" />
+  <meta property="og:description" content="Não percas o desafio por quebrar uma regra. O copiloto que te avisa antes. Demo grátis." />
+  <meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#0b0e14" media="(prefers-color-scheme: dark)" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%231d4ed8'/><path d='M16 6.5 8.5 9.5v5.6c0 4.7 3.2 8.5 7.5 9.6 4.3-1.1 7.5-4.9 7.5-9.6V9.5z' fill='none' stroke='white' stroke-width='2'/><path d='m12.5 16 2.5 2.5 4.5-5' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap" />
+  <link rel="stylesheet" href="./src/landing/landing.css" />
+  <script>
+    // Ativa as animações antes de pintar; se o JS principal falhar, a página aparece completa na mesma.
+    document.documentElement.classList.add("anim");
+    setTimeout(function () { if (!document.documentElement.classList.contains("anim-pronta")) document.documentElement.classList.remove("anim"); }, 3000);
+  </script>
+</head>
+<body>
+  <a class="saltar" href="#conteudo">Saltar para o conteúdo</a>
+
+  <nav class="nav">
+    <div class="largura nav-in">
+      <a class="marca" href="#" aria-label="Sentinela, início"><svg class="ico-marca" viewBox="0 0 32 32" aria-hidden="true"><use href="#i-marca" /></svg>Sentinela</a>
+      <div class="nav-links">
+        <a href="#funcionalidades">Funcionalidades</a>
+        <a href="#simulador">Simulador</a>
+        <a href="#preco">Preço</a>
+        <a href="#faq">Perguntas</a>
+      </div>
+      <a class="btn btn-primario btn-peq" href="app/">Experimentar grátis</a>
+    </div>
+  </nav>
+
+  <main id="conteudo">
+    <header class="hero">
+      <div class="largura hero-grelha">
+        <div class="hero-texto">
+          <p class="pilula-nova"><span>Novo</span>Modo Prop Firm · IA e voz em português</p>
+          <h1>Não percas o teu desafio por quebrar uma regra.</h1>
+          <p class="lead">O Sentinela vê o teu gráfico e avisa-te em voz alta <b>antes</b> de passares o limite diário, arriscares demais ou entrares sem stop. Funciona com qualquer prop firm e na tua conta própria.</p>
+          <div class="botoes">
+            <a class="btn btn-primario" href="app/">Experimentar a demo grátis<svg class="ico" aria-hidden="true"><use href="#i-seta" /></svg></a>
+            <a class="btn btn-secundario" href="#prop">Como funciona</a>
+          </div>
+          <ul class="garantias">
+            <li><svg class="ico" aria-hidden="true"><use href="#i-check" /></svg>Sem promessas de lucro</li>
+            <li><svg class="ico" aria-hidden="true"><use href="#i-check" /></svg>Sem sinais de compra ou venda</li>
+            <li><svg class="ico" aria-hidden="true"><use href="#i-check" /></svg>Garantia de 14 dias</li>
+          </ul>
+        </div>
+
+        <section class="janela" aria-label="Demonstração ao vivo do Sentinela (mercado simulado)">
+          <div class="janela-barra">
+            <span class="pontos" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="janela-titulo mono">EURUSD · M5</span>
+            <span class="ao-vivo"><i></i>simulação</span>
+          </div>
+          <div class="ecra-grafico">
+            <div id="hero-grafico" class="grafico-host"></div>
+            <div id="hud" class="hud" role="status" aria-live="polite" hidden></div>
+          </div>
+          <div class="instrumentos">
+            <div class="instr">
+              <svg viewBox="0 0 120 70" class="gauge" aria-hidden="true">
+                <path d="M12 62a48 48 0 0 1 96 0" class="gauge-fundo" />
+                <path id="gauge-arco" d="M12 62a48 48 0 0 1 96 0" class="gauge-valor" pathLength="100" stroke-dasharray="100 100" />
+              </svg>
+              <div class="instr-valor"><b id="gauge-num" class="mono">100</b><span>disciplina hoje</span></div>
+            </div>
+            <div class="instr"><b id="instr-rsi" class="mono">—</b><span>RSI (14)</span></div>
+            <div class="instr"><b id="instr-perdas" class="mono">0</b><span>perdas seguidas</span></div>
+          </div>
+          <div class="radio">
+            <div class="radio-topo">
+              <span>Copiloto</span>
+              <button id="btn-ouvir" class="btn-ouvir" type="button" aria-pressed="false"><svg class="ico" aria-hidden="true"><use href="#i-som" /></svg><span>Ouvir</span></button>
+            </div>
+            <ol id="radio" class="radio-linhas"></ol>
+          </div>
+        </section>
+      </div>
+      <div class="largura compativel">
+        <span>Funciona com qualquer gráfico no ecrã:</span>
+        <ul><li>TradingView</li><li>MetaTrader 4 e 5</li><li>XTB</li><li>eToro</li><li>Binance</li><li>Interactive Brokers</li></ul>
+      </div>
+    </header>
+
+    <section class="faixa-numero">
+      <div class="largura faixa-in">
+        <p class="numero-heroi mono">74–89%</p>
+        <p>das contas de investidores de retalho <b>perdem dinheiro</b> com CFDs. É o aviso que as corretoras europeias são obrigadas a mostrar. Quase nunca falta estratégia. Falta disciplina.</p>
+      </div>
+    </section>
+
+    <section id="prop" class="secao">
+      <div class="largura prop-grelha">
+        <div>
+          <p class="sobretitulo">Modo Prop Firm</p>
+          <h2>Um desafio custa centenas de euros. Uma regra quebrada deita-o fora.</h2>
+          <p class="lead">Escolhes as regras do teu desafio. A partir daí o Sentinela conta, trade a trade, quanto ainda podes perder hoje e no total, e avisa-te antes de o stop te fazer passar o limite.</p>
+          <ol class="prop-passos">
+            <li><b>1</b><span><strong>Escolhes o desafio</strong> e o tamanho da conta. Os números ficam preenchidos e confirmas os da tua prop firm.</span></li>
+            <li><b>2</b><span><strong>Abres o gráfico</strong> na tua plataforma e carregas em Começar. O Sentinela lê-o no fecho de cada vela.</span></li>
+            <li><b>3</b><span><strong>Antes de entrar</strong>, pões a entrada e o stop. Se o trade te puder fazer perder o desafio, ouves isso antes de carregares no botão.</span></li>
+          </ol>
+        </div>
+        <figure class="prop-cartao" aria-label="Exemplo do painel do desafio">
+          <figcaption><span>O teu desafio · 10 000 €</span><span class="mono">exemplo</span></figcaption>
+          <div class="prop-limite aviso"><div><span>Podes perder hoje</span><b class="mono">restam 150 €</b></div><i style="--p:70%"></i></div>
+          <div class="prop-limite"><div><span>Perda máxima do desafio</span><b class="mono">restam 650 €</b></div><i style="--p:35%"></i></div>
+          <div class="prop-limite meta"><div><span>Meta do desafio</span><b class="mono">420 € de 1000 €</b></div><i style="--p:42%"></i></div>
+          <p class="prop-voz"><svg class="ico" aria-hidden="true"><use href="#i-som" /></svg>"Se o stop for atingido perdes 220 € e passas o limite diário. No desafio, isso é perder a conta. Reduz a quantidade."</p>
+        </figure>
+      </div>
+    </section>
+
+    <section id="funcionalidades" class="secao secao-cinza">
+      <div class="largura">
+        <p class="sobretitulo">O que o Sentinela faz</p>
+        <h2>Quatro erros esvaziam a maioria das contas. O Sentinela reage a cada um.</h2>
+        <div class="falhas" role="table" aria-label="Erros e reação do Sentinela">
+          <div class="falha-cab" role="row"><span role="columnheader">Erro</span><span role="columnheader">O que te custa</span><span role="columnheader">O que ouves do Sentinela</span></div>
+          <div class="falha" role="row">
+            <span role="cell" class="codigo cod-critico"><svg class="ico" aria-hidden="true"><use href="#i-stop" /></svg>Sem stop loss</span>
+            <p role="cell">Uma posição que "vai voltar" e não volta. Um só trade apaga semanas de ganhos.</p>
+            <p role="cell" class="voz">"Atenção: posição aberta sem stop loss. Define já onde estás errado."</p>
+          </div>
+          <div class="falha" role="row">
+            <span role="cell" class="codigo cod-aviso"><svg class="ico" aria-hidden="true"><use href="#i-alerta" /></svg>Risco acima do limite</span>
+            <p role="cell">A 10% por trade, 7 perdas seguidas levam metade da conta.</p>
+            <p role="cell" class="voz">"Este trade arrisca 6% da conta. O teu limite é 1%. Reduz para 0,8 lotes."</p>
+          </div>
+          <div class="falha" role="row">
+            <span role="cell" class="codigo cod-aviso"><svg class="ico" aria-hidden="true"><use href="#i-repetir" /></svg>Trade de vingança</span>
+            <p role="cell">Perdeste e entras logo outra vez para recuperar. É assim que um dia mau vira um desastre.</p>
+            <p role="cell" class="voz">"Duas perdas seguidas. Pausa de 15 minutos. Volta com a cabeça fria."</p>
+          </div>
+          <div class="falha" role="row">
+            <span role="cell" class="codigo cod-aviso"><svg class="ico" aria-hidden="true"><use href="#i-camadas" /></svg>Overtrading</span>
+            <p role="cell">Mais trades dão mais comissões e decisões mais cansadas, não mais lucro.</p>
+            <p role="cell" class="voz">"Já fizeste 5 trades hoje, o teu limite. O melhor trade agora é nenhum."</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao">
+      <div class="largura">
+        <p class="sobretitulo">No teu ecrã</p>
+        <h2>Indicações claras. A decisão continua a ser tua.</h2>
+        <p class="lead">O Sentinela lê o gráfico e mostra-te o que um profissional procuraria. Não te diz para comprar nem para vender: é isso que o mantém do lado certo da lei e é assim que aprendes a decidir.</p>
+        <div class="grelha-4">
+          <article class="cartao-ind">
+            <svg class="ico ico-cartao" aria-hidden="true"><use href="#i-grafico" /></svg>
+            <h3>Leitura da estrutura</h3>
+            <p>Topos, fundos, zonas onde o preço já reagiu e o que dizem os indicadores visíveis.</p>
+            <p class="exemplo">"Fundos mais altos desde a abertura. RSI em 64."</p>
+          </article>
+          <article class="cartao-ind">
+            <svg class="ico ico-cartao" aria-hidden="true"><use href="#i-ramos" /></svg>
+            <h3>Cenários nos dois sentidos</h3>
+            <p>Sempre dois: o que muda se o preço subir além de uma zona e se cair abaixo de outra.</p>
+            <p class="exemplo">"Fecho acima de 1.0950: novo topo. Abaixo de 1.0912: a sequência de alta quebra."</p>
+          </article>
+          <article class="cartao-ind">
+            <svg class="ico ico-cartao" aria-hidden="true"><use href="#i-escudo" /></svg>
+            <h3>Zona de invalidação</h3>
+            <p>Onde a leitura atual deixa de valer. É a referência para decidires onde fica o teu stop.</p>
+            <p class="exemplo">"Abaixo de 1.0912 a estrutura de alta deixa de ser válida."</p>
+          </article>
+          <article class="cartao-ind">
+            <svg class="ico ico-cartao" aria-hidden="true"><use href="#i-lista" /></svg>
+            <h3>As tuas regras, verificadas</h3>
+            <p>Escreves a tua estratégia por palavras tuas. O Sentinela diz quais estão cumpridas no gráfico.</p>
+            <p class="exemplo">"As tuas regras de entrada estão todas cumpridas. A decisão é tua."</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="simulador" class="secao secao-cinza">
+      <div class="largura">
+        <p class="sobretitulo">Simulador</p>
+        <h2>50 traders. A mesma estratégia vencedora. Só muda o risco.</h2>
+        <p class="lead">Todos acertam 38% das vezes e ganham 1,8 vezes o que arriscam: uma estratégia com vantagem real (+0,06 R por trade). Mexe no risco e vê quem sobrevive a 100 trades.</p>
+        <div class="sim">
+          <div class="sim-controlos">
+            <label for="sim-risco">Risco por trade <output id="sim-risco-txt" class="mono">2%</output></label>
+            <input type="range" id="sim-risco" min="0.5" max="20" step="0.5" value="2" />
+            <div class="marcas mono" aria-hidden="true"><span>0,5%</span><span>profissionais: 0,5–2%</span><span>20%</span></div>
+            <div class="tiles">
+              <div class="tile"><span>Perderam metade da conta</span><b id="sim-rebentaram" class="mono">0%</b></div>
+              <div class="tile"><span>Conta mediana ao fim de 100 trades</span><b id="sim-mediana" class="mono">1.040 €</b></div>
+              <div class="tile"><span>Pior caso</span><b id="sim-pior" class="mono">630 €</b></div>
+            </div>
+            <button id="sim-nova" class="btn btn-secundario btn-peq" type="button"><svg class="ico" aria-hidden="true"><use href="#i-repetir" /></svg>Nova simulação</button>
+          </div>
+          <figure class="sim-figura">
+            <figcaption class="legenda">
+              <span><i class="chave chave-mediana"></i>Trader mediano</span>
+              <span><i class="chave chave-vivo"></i>Sobreviveu</span>
+              <span><i class="chave chave-ruina"></i>Perdeu metade da conta</span>
+            </figcaption>
+            <div id="sim-grafico" class="sim-grafico" role="img" aria-label="Evolução das contas de 50 traders"></div>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao">
+      <div class="largura grelha-2">
+        <div>
+          <p class="sobretitulo">Estatística, não azar</p>
+          <h2>Com esta estratégia, há 77% de hipóteses de apanhares 7 perdas seguidas.</h2>
+          <p class="lead">Em 100 trades com 38% de acerto, a maioria dos traders apanha uma sequência longa de perdas. É aí que entra o tilt, e é por isso que o Sentinela impõe pausas.</p>
+          <p class="nota">Calculado nesta página com 5.000 simulações de 100 trades.</p>
+        </div>
+        <figure class="barras-figura">
+          <figcaption class="pequeno">Probabilidade de ter pelo menos N perdas seguidas em 100 trades</figcaption>
+          <div id="seq-grafico" class="seq-grafico" role="img" aria-label="Probabilidade de sequências de perdas"></div>
+          <details class="tabela-dados"><summary>Ver como tabela</summary><table id="seq-tabela" class="mono"></table></details>
+        </figure>
+      </div>
+    </section>
+
+    <section class="secao secao-cinza">
+      <div class="largura">
+        <p class="sobretitulo">Progressão</p>
+        <h2>Sobe de patente por seres disciplinado.</h2>
+        <p class="lead">Cada trade com stop, dentro do plano, e cada pausa cumprida dão pontos. <b>Nunca ganhas pontos por lucro nem por fazeres mais trades</b>: isso só te empurrava para o erro.</p>
+        <ol class="patentes" id="patentes"></ol>
+        <div class="conquistas" id="conquistas"></div>
+      </div>
+    </section>
+
+    <section id="teste" class="secao">
+      <div class="largura">
+        <div class="teste">
+          <div class="teste-intro">
+            <p class="sobretitulo">Teste de 40 segundos</p>
+            <h2>Que tipo de trader és?</h2>
+            <p class="lead">6 perguntas sobre o que fazes quando o mercado aperta. No fim, o teu ponto fraco e uma regra para começares já.</p>
+          </div>
+          <div id="teste-corpo" class="teste-corpo"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="secao secao-cinza">
+      <div class="largura">
+        <p class="sobretitulo">Porque é diferente</p>
+        <h2>Gurus vendem sonhos. O Sentinela vende disciplina.</h2>
+        <div class="tabela-wrap">
+          <table class="comparar">
+            <thead><tr><th scope="col"></th><th scope="col">Sinais, robôs e gurus</th><th scope="col">Sentinela</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Promessa</th><td>"90% de acerto", "lucro garantido"</td><td>Nenhuma. Só as regras que tu escolhes.</td></tr>
+              <tr><th scope="row">O que aprendes</th><td>Nada: copias e ficas dependente</td><td>A ler o gráfico, explicado enquanto operas</td></tr>
+              <tr><th scope="row">Quando perdes</th><td>"O mercado estava estranho"</td><td>O diário mostra o que te custou cada erro</td></tr>
+              <tr><th scope="row">Gestão de risco</th><td>Raramente falam disso</td><td>Calcula a posição e trava o tilt</td></tr>
+              <tr><th scope="row">Preço</th><td>Mensalidade para sempre</td><td>Pagamento único</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="preco" class="secao">
+      <div class="largura">
+        <p class="sobretitulo">Preço</p>
+        <h2>Menos do que custa um único trade sem stop.</h2>
+        <div class="vagas" aria-live="polite">
+          <div class="vagas-barra"><i id="vagas-barra"></i></div>
+          <p><b id="vagas-restantes" class="mono">100</b> de <span id="vagas-total">100</span> licenças de fundador disponíveis. Depois, o preço passa para <span id="preco-normal-txt">197 €</span>.</p>
+        </div>
+        <div class="precos">
+          <article class="plano plano-destaque">
+            <p class="plano-selo">Preço de fundador</p>
+            <h3>Sentinela</h3>
+            <p class="preco"><s class="mono" id="preco-normal">197 €</s> <b class="mono" id="preco-fundador">97 €</b> <span>pagamento único</span></p>
+            <ul>
+              <li>Modo Prop Firm: limites do desafio ao vivo</li>
+              <li>Copiloto com IA que vê o ecrã e fala</li>
+              <li>Cenários, zona de invalidação e as tuas regras verificadas</li>
+              <li>Pausas, limites diários e aviso de vingança</li>
+              <li>Calculadora de posição, diário e patentes</li>
+              <li>Atualizações da versão 1</li>
+            </ul>
+            <a class="btn btn-primario" href="#preco" data-checkout="licenca">Comprar o Sentinela</a>
+          </article>
+          <article class="plano">
+            <h3>Sentinela + Mentoria</h3>
+            <p class="preco"><b class="mono">+200 €</b> <span>pagamento único</span></p>
+            <ul>
+              <li>Tudo do plano Sentinela</li>
+              <li>Sessão 1:1 de 60 min para montar as tuas regras</li>
+              <li>Revisão do teu diário ao fim de 30 dias</li>
+            </ul>
+            <a class="btn btn-secundario" href="#preco" data-checkout="mentoria">Comprar com mentoria</a>
+          </article>
+          <article class="plano">
+            <p class="plano-selo plano-selo-suave">Em breve</p>
+            <h3>Sentinela Pro</h3>
+            <p class="preco"><b class="mono">39 €</b> <span>por mês</span></p>
+            <ul>
+              <li>IA incluída: não precisas de chave</li>
+              <li>15 horas de copiloto por mês</li>
+              <li>Relatório semanal escrito pela IA</li>
+            </ul>
+            <form class="form-espera" name="lista-pro" method="POST" data-netlify="true" netlify-honeypot="campo-isco">
+              <input type="hidden" name="form-name" value="lista-pro" />
+              <p hidden><label>Não preencher <input name="campo-isco" /></label></p>
+              <label class="pequeno" for="email-pro">Entra na lista de espera e paga menos no lançamento</label>
+              <div class="linha-form"><input id="email-pro" type="email" name="email" required placeholder="o.teu@email.com" autocomplete="email" /><button class="btn btn-secundario btn-peq" type="submit">Avisar-me</button></div>
+            </form>
+          </article>
+        </div>
+        <p class="nota">Nos planos de pagamento único, a IA usa a tua chave da Google (Gemini) ou da Anthropic (Claude), paga diretamente a elas. Com a Gemini e velas de 5 minutos, a nossa estimativa é de uns 4 dólares por mês a 4 horas por dia. A calculadora, os limites, o diário e as regras não têm custos extra.</p>
+        <div class="garantia">
+          <svg class="ico ico-grande" aria-hidden="true"><use href="#i-escudo" /></svg>
+          <div><h3>14 dias para experimentar</h3><p>Se não te ajudar a ter mais disciplina, devolvemos-te o dinheiro. Sem perguntas.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq" class="secao secao-cinza">
+      <div class="largura estreito">
+        <h2>Perguntas frequentes</h2>
+        <details><summary>O Sentinela garante que vou ganhar dinheiro?</summary><p>Não, e desconfia de quem garanta. Nenhuma ferramenta prevê o mercado. O Sentinela ataca a causa mais comum das perdas, o comportamento, para a tua estratégia ter tempo e capital para funcionar.</p></details>
+        <details><summary>Ele diz-me quando comprar e vender?</summary><p>Não. Mostra a estrutura do gráfico, dois cenários (um para cada lado), a zona onde a leitura deixa de valer e se as tuas próprias regras estão cumpridas. A decisão é sempre tua.</p></details>
+        <details><summary>Funciona com a minha prop firm?</summary><p>Sim, com qualquer uma: o Sentinela só olha para o teu ecrã e não se liga à tua conta. Escolhes um modelo de regras (perda diária, perda total, meta) e corriges os números para os da tua empresa. O Sentinela não é afiliado a nenhuma prop firm e não garante que passes o desafio: ajuda-te a não o perder por quebrar uma regra.</p></details>
+        <details><summary>Funciona com a minha plataforma?</summary><p>Se o gráfico aparece no ecrã, funciona: TradingView, MetaTrader 4 e 5, XTB, eToro, Binance, Interactive Brokers. Precisas do Chrome ou do Edge num computador.</p></details>
+        <details><summary>Quanto custa a IA?</summary><p>Usa a tua chave da Google ou da Anthropic, que crias em 2 minutos. O Sentinela só lê o gráfico quando uma vela fecha, por isso gasta pouco: com a Gemini, a nossa estimativa é de uns 4 dólares por mês a 4 horas por dia, em velas de 5 minutos. O plano Pro, quando sair, inclui a IA.</p></details>
+        <details><summary>A voz não fica a falar o tempo todo?</summary><p>Não. Por defeito só fala quando é importante: um aviso das tuas regras, uma mudança na estrutura do gráfico ou quando as tuas regras de entrada ficam todas cumpridas. No Microsoft Edge usa vozes naturais em português, grátis.</p></details>
+        <details><summary>Os meus dados estão seguros?</summary><p>O diário, as regras e a chave ficam só no teu browser. As capturas vão diretamente para a Google ou para a Anthropic, conforme a tua chave, sem passar por servidores nossos.</p></details>
+        <details><summary>Serve para cassino ou apostas?</summary><p>Não. No cassino a vantagem da casa garante que perdes a longo prazo, e nenhuma disciplina muda isso.</p></details>
+      </div>
+    </section>
+
+    <section id="apoiar" class="secao secao-cinza" hidden>
+      <div class="largura apoiar">
+        <div>
+          <p class="sobretitulo">Apoiar o projeto</p>
+          <h2>O Sentinela ajudou-te? Paga-nos um café.</h2>
+          <p class="lead">Se gostas da ferramenta e queres que continue a melhorar, podes deixar um apoio. É totalmente voluntário: não desbloqueia nada e não depende dos teus resultados no mercado.</p>
+        </div>
+        <div class="apoiar-botoes" id="apoiar-botoes"></div>
+      </div>
+    </section>
+
+    <section class="final">
+      <div class="largura">
+        <h2>Um trade fora das regras pode custar o desafio inteiro.</h2>
+        <div class="botoes centro">
+          <a class="btn btn-primario" href="app/">Experimentar a demo grátis<svg class="ico" aria-hidden="true"><use href="#i-seta" /></svg></a>
+          <a class="btn btn-secundario" href="#preco">Ver preços</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    <div class="largura">
+      <p><b>Aviso de risco.</b> O trading de instrumentos financeiros, sobretudo CFDs e produtos alavancados, envolve risco elevado de perder dinheiro rapidamente. O Sentinela é uma ferramenta educativa e de disciplina: não presta aconselhamento financeiro nem de investimento, não emite recomendações de compra ou venda e não garante resultados. As simulações desta página são ilustrativas.</p>
+      <p>© <span id="ano">2026</span> Sentinela · <a href="termos.html">Termos e privacidade</a> · <a href="https://www.livroreclamacoes.pt" rel="noopener">Livro de Reclamações</a><span id="contacto-rodape"></span> · Gráficos por <a href="https://www.tradingview.com/" rel="noopener">TradingView Lightweight Charts™</a></p>
+    </div>
+  </footer>
+
+  <!-- Cópias estáticas dos formulários: o Netlify só deteta formulários presentes no HTML. -->
+  <form name="teste-trader" data-netlify="true" netlify-honeypot="campo-isco" hidden>
+    <input name="email" type="email" /><input name="perfil" /><input name="campo-isco" />
+  </form>
+
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-marca" viewBox="0 0 32 32"><rect width="32" height="32" rx="8" fill="var(--acento)" /><path d="M16 6.5 8.5 9.5v5.6c0 4.7 3.2 8.5 7.5 9.6 4.3-1.1 7.5-4.9 7.5-9.6V9.5z" fill="none" stroke="var(--acento-tinta)" stroke-width="2" /><path d="m12.5 16 2.5 2.5 4.5-5" fill="none" stroke="var(--acento-tinta)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+    <symbol id="i-seta" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+    <symbol id="i-som" viewBox="0 0 24 24"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" /><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></symbol>
+    <symbol id="i-stop" viewBox="0 0 24 24"><path d="M8.2 2.8h7.6l5.4 5.4v7.6l-5.4 5.4H8.2l-5.4-5.4V8.2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /><path d="M8.5 12h7" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></symbol>
+    <symbol id="i-alerta" viewBox="0 0 24 24"><path d="M12 3.2 2.3 20h19.4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /><path d="M12 9.5v4.5M12 17v.2" stroke="currentColor" stroke-width="2" stroke-linecap="round" /></symbol>
+    <symbol id="i-repetir" viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 20v-4.5h4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+    <symbol id="i-camadas" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5zM3 12.5l9 5 9-5M3 16.5l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /></symbol>
+    <symbol id="i-grafico" viewBox="0 0 24 24"><path d="M4 19h16M7 15V9M11 15V6M15 15v-4M19 15V8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /></symbol>
+    <symbol id="i-ramos" viewBox="0 0 24 24"><path d="M4 12h6l4-5h6M10 12l4 5h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+    <symbol id="i-escudo" viewBox="0 0 24 24"><path d="M12 2.5 3.5 6v6.2c0 5.2 3.6 9.4 8.5 10.6 4.9-1.2 8.5-5.4 8.5-10.6V6z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" /><path d="m8.5 12.5 2.5 2.5 4.5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+    <symbol id="i-lista" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" /><path d="m3.5 6 1.2 1.2L7 5M3.5 12l1.2 1.2L7 11M3.5 18l1.2 1.2L7 17" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+    <symbol id="i-cafe" viewBox="0 0 24 24"><path d="M4 9h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5zM16 10h1.5a2.5 2.5 0 0 1 0 5H16M8 3.5v2.5M12 3.5v2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+  </svg>
+
+  <script type="module" src="./src/landing/landing.js"></script>
+</body>
+</html>

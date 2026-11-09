@@ -1,0 +1,14 @@
+node_modules
+dist
+licencas-*.txt
+grafico-teste.png
+site/app
+.env.local
+.env*.local
+.env
+.env.*
+!.env.example
+.vercel
+.claude/
+# estratégia comercial: fica só no teu PC (o repositório é público)
+marketing/
