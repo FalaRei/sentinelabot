@@ -113,7 +113,14 @@ function entrarApp() {
   atualizarTudo({ anunciar: false });
   preencherDefinicoes();
   atualizarPassos();
-  if (!ler("assistente", false)) abrirAssistente();
+  if (estado.servidor && !ler("assistente", false)) {
+    // Teste privado: entra direto, com um desafio clássico de 10 000 € e velas de 5 min (muda-se em "mudar").
+    estado.config = { ...aplicarModelo(estado.config, "classico", { saldo: 10000 }), timeframeMin: 5 };
+    gravar("config", estado.config);
+    gravar("assistente", true);
+    preencherDefinicoes();
+    atualizarTudo({ anunciar: false });
+  } else if (!ler("assistente", false)) abrirAssistente();
 }
 $("btn-ativar").addEventListener("click", () => {
   const chave = $("input-licenca").value.trim().toUpperCase();
