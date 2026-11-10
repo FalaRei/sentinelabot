@@ -47,6 +47,7 @@
     <nav class="separadores" role="tablist" aria-label="Secções">
       <button class="sep ativo" data-sep="copiloto" role="tab" type="button"><svg class="ico" aria-hidden="true"><use href="#i-radar" /></svg>Sessão</button>
       <button class="sep" data-sep="dia" role="tab" type="button"><svg class="ico" aria-hidden="true"><use href="#i-livro" /></svg>O meu dia</button>
+      <button class="sep" data-sep="bacbo" role="tab" type="button" id="sep-btn-bacbo" hidden><span aria-hidden="true">🎲</span>Bac Bo</button>
       <button class="sep" data-sep="definicoes" role="tab" type="button"><svg class="ico" aria-hidden="true"><use href="#i-ajustes" /></svg>Definições</button>
     </nav>
 
@@ -290,6 +291,71 @@
             <ol id="p-eventos" class="feed"></ol>
           </div>
         </div>
+      </section>
+
+      <!-- BAC BO (só no teste privado) -->
+      <section id="sep-bacbo" class="painel">
+        <div class="bb-grelha">
+          <div class="cartao bb-principal">
+            <div class="bb-cab">
+              <h2>O que saiu?</h2>
+              <span class="pequeno mono"><b id="bb-rondas">0</b> rondas</span>
+            </div>
+            <div class="bb-botoes">
+              <button type="button" class="bb-cor azul" data-cor="azul"><b>AZUL</b><span>Jogador</span></button>
+              <button type="button" class="bb-cor empate" data-cor="empate"><b>EMPATE</b><span>Tie</span></button>
+              <button type="button" class="bb-cor vermelho" data-cor="vermelho"><b>VERMELHO</b><span>Banca</span></button>
+            </div>
+            <div id="bb-historico" class="bb-historico" aria-label="Histórico de resultados"></div>
+            <div class="acoes">
+              <button type="button" id="bb-desfazer" class="btn mini secundario">Desfazer</button>
+              <button type="button" id="bb-nova" class="btn mini secundario">Nova sessão</button>
+            </div>
+
+            <div class="bb-proxima">
+              <p class="rotulo-sec">Próxima ronda · probabilidade real</p>
+              <div class="bb-prob">
+                <div class="azul"><b class="mono" id="bb-p-azul">—</b><span>Azul</span></div>
+                <div class="empate"><b class="mono" id="bb-p-empate">—</b><span>Empate</span></div>
+                <div class="vermelho"><b class="mono" id="bb-p-vermelho">—</b><span>Vermelho</span></div>
+              </div>
+              <p class="bb-verdade">Nenhuma cor tem vantagem. É assim em todas as rondas, aconteça o que acontecer antes. Os dados não têm memória.</p>
+            </div>
+          </div>
+
+          <div class="pilha">
+            <div class="cartao">
+              <h2>Esta sessão</h2>
+              <div class="bb-obs">
+                <div><span>Azul</span><i><em id="bb-barra-azul" class="azul"></em></i><b class="mono"><span id="bb-n-azul">0</span> · <span id="bb-obs-azul">—</span></b></div>
+                <div><span>Vermelho</span><i><em id="bb-barra-vermelho" class="vermelho"></em></i><b class="mono"><span id="bb-n-vermelho">0</span> · <span id="bb-obs-vermelho">—</span></b></div>
+                <div><span>Empate</span><i><em id="bb-barra-empate" class="empate"></em></i><b class="mono"><span id="bb-n-empate">0</span> · <span id="bb-obs-empate">—</span></b></div>
+              </div>
+              <dl class="kv">
+                <dt>Sequência agora</dt><dd id="bb-seq-atual">—</dd>
+                <dt>Maior sequência</dt><dd id="bb-seq-maior">—</dd>
+              </dl>
+              <p class="pequeno" id="bb-seq-normal"></p>
+            </div>
+
+            <div class="cartao">
+              <h2>O teu dinheiro <span class="pequeno mono" id="bb-tempo">0 min</span></h2>
+              <div class="linha-campos tres">
+                <label>Saldo inicial (€)<input id="bb-saldo-ini" type="number" step="any" min="0" inputmode="decimal" /></label>
+                <label>Saldo agora (€)<input id="bb-saldo-agora" type="number" step="any" min="0" inputmode="decimal" /></label>
+                <label>Limite de perda (€)<input id="bb-limite" type="number" step="any" min="0" inputmode="decimal" /></label>
+              </div>
+              <div id="bb-resultado" class="bb-resultado mono">—</div>
+              <p id="bb-aviso" class="bb-aviso" hidden>Estás perto do teu limite de perda. É boa altura para parar.</p>
+              <div id="bb-travao" class="bb-travao" hidden>
+                <b>Limite atingido. Para aqui.</b>
+                <span>Tentar recuperar é onde o casino ganha mais. Fecha a mesa e volta noutro dia.</span>
+                <button type="button" id="bb-continuar" class="btn mini secundario">Continuar mesmo assim (sobe o limite 10 €)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="pequeno bb-rodape">O Sentinela não diz onde apostar no Bac Bo porque não existe uma aposta melhor: cada cor ganha 575 em 1296 combinações de dados, sempre. Jogar envolve perder dinheiro. Se sentires que perdeste o controlo, há ajuda gratuita e confidencial no SICAD (sicad.pt).</p>
       </section>
 
       <!-- DEFINIÇÕES -->

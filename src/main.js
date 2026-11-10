@@ -17,6 +17,7 @@ import { tradesExemplo, eExemplo } from "./core/exemplo.js";
 import { ligarIA, testarChave } from "./services/ia.js";
 import { detetarServidor, ligarServidor } from "./services/servidor.js";
 import { holofote, limparHolofote } from "./ui/holofote.js";
+import { iniciarBacBo } from "./ui/bacbo.js";
 import { iniciarCaptura, capturarFrame } from "./services/capture.js";
 import { falar, calar, vozDisponivel, nomeVoz, vozNatural, usarVozExterna } from "./services/voice.js";
 import { ler, gravar, apagar } from "./services/storage.js";
@@ -1413,6 +1414,8 @@ botaoIniciar(false);
     estado.servidor = servidor;
     if (servidor.voz) usarVozExterna((texto) => ligacaoIA().voz(texto));
     aplicarModo();
+    $("sep-btn-bacbo").hidden = false;
+    iniciarBacBo({ $, h, ler, gravar, falar, vozLigada, sons });
     document.querySelector(".custo").hidden = true;
     return entrarApp();
   }
